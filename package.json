@@ -1,0 +1,32 @@
+{
+  "name": "littleslope",
+  "version": "0.0.1",
+  "repository": "git@github.com:wouldadam/msf-decoder.git",
+  "author": "Adam Wood <contact@adamwood.org>",
+  "license": "BSD-3-Clause",
+  "browserslist": "> 0.5%, last 2 versions, not dead",
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "module": "./dist/littleslope.js",
+  "main": "./dist/littleslope.umd.cjs",
+  "types": "./dist/main.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/littleslope.js",
+      "require": "./dist/littleslope.umd.cjs"
+    }
+  },
+  "source": "src/index.html",
+  "devDependencies": {
+    "@types/node": "^18.16.2",
+    "vite": "^4.3.2",
+    "vite-plugin-dts": "^2.3.0"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  }
+}

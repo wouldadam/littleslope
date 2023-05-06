@@ -27,6 +27,7 @@
     "highlight.js": "^11.8.0",
     "keycharm": "^0.4.0",
     "timsort": "^0.3.0",
+    "typedoc": "^0.24.6",
     "typescript": "^5.0.4",
     "uuid": "^9.0.0",
     "vis-data": "^7.1.6",
@@ -39,6 +40,7 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "build-examples": "tsc && BUILD_EXAMPLES=1 vite build",
+    "build-docs": "typedoc lib/main.ts",
     "preview": "vite preview"
   }
 }

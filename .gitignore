@@ -1,4 +1,5 @@
 /dist
 /dist_examples
+/docs
 /node_modules
 /yarn-error.log

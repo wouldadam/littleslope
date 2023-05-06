@@ -2,6 +2,8 @@
   "cSpell.language": "en-GB",
   "editor.formatOnSave": true,
   "cSpell.words": [
+    "Backpropagate",
+    "backpropagation",
     "littleslope",
     "Perceptron"
   ]

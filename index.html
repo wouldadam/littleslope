@@ -1,10 +1,62 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Toys</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#222222" />
+    <meta name="description" content="Examples for littleslope." />
+
+    <title>littleslope example</title>
+
+    <link rel="stylesheet" href="src/index.css" />
+    <link rel="stylesheet" href="/node_modules/highlight.js/styles/a11y-dark.css" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text x=%22-.1em%22 y=%22.9em%22 font-size=%2290%22>🧮</text></svg>">
   </head>
+
   <body>
+    <h1 class="title">littleslope examples</h1>
+
+    <h2>Values</h2>
+
+    <p>
+      Values represent a single number. They can be combined to form an expression.
+      As we can't overload operators in JS, we use method calls such as <code class="language-typescript">.subtract(27)</code>.
+      Values objects track their relationship to other Values in an expression to form an expression graph.
+    </p>
+
+    <p>
+      Expressions can be simple:
+    </p>
+
+    <pre><code id="simple-expression">...</code></pre>
+
+    <div id="simple-expression-graph" class="graph"></div>
+
+    <p>
+      You can set the name of a created Value with <code class="language-typescript">.as("name")</code>. Any Values created as a result
+      of an operation will be assigned the name of the operation, careful as this can get pretty long.
+    </p>
+
+    <p>
+      Here's a more complex expression:
+    </p>
+
+    <pre><code id="complex-expression">...</code></pre>
+
+    <div id="complex-expression-graph" class="graph"></div>
+
+    <h3>Gradients</h3>
+
+    <p>
+      You can compute the gradient of an expression by calling <code class="language-typescript">.backward()</code> on the result
+      of an expression. This gradient will help us modify the weights of a neural network when training it.
+    </p>
+
+    <p>
+      Use the button below to compute the gradients for the expressions above.
+    </p>
+
+    <button id="backpropagate-expressions">Backpropagate</button>
+    <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

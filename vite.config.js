@@ -2,12 +2,22 @@ import { resolve } from 'path';
 import { defineConfig } from 'vite';
 import dts from 'vite-plugin-dts';
 
-export default defineConfig({
+let config = defineConfig({
   build: {
-    lib: {
-      entry: resolve(__dirname, 'lib/main.ts'),
-      name: 'littleslope',
-    },
-  },
-  plugins: [dts()],
+    outDir: "dist_examples"
+  }
 });
+
+if (!process.env.BUILD_EXAMPLES) {
+  config = defineConfig({
+    build: {
+      lib: {
+        entry: resolve(__dirname, 'lib/main.ts'),
+        name: 'littleslope',
+      },
+    },
+    plugins: [dts()],
+  });
+}
+
+export default config;

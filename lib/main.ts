@@ -1,3 +1,1 @@
-export function hi() {
-  console.log("HELLO");
-}
+export { Value, type Operation } from "./Value";

@@ -32,6 +32,11 @@ export function createExpressionGraph(
         sortMethod: "directed",
       },
     },
+    physics: {
+      hierarchicalRepulsion: {
+        avoidOverlap: 0.5,
+      },
+    },
   };
 
   const network = new Network(container, { nodes, edges }, options);

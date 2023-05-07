@@ -109,9 +109,6 @@ export class Value {
    * @returns The resulting Value.
    */
   divide(rhs: Value | number): Value {
-    // const rhsVal =
-    //   typeof rhs === "number" ? new Value(rhs, rhs.toFixed()) : rhs;
-    // return this.multiply(rhsVal.pow(-1));
     const rhsVal =
       typeof rhs === "number" ? new Value(rhs, rhs.toFixed()) : rhs;
     const resultName = `${this.name}/${rhsVal.name}`;

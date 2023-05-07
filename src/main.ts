@@ -1,5 +1,5 @@
 import { createExpressionGraph } from "../lib/graph";
-import { MultiLayerPerceptron } from "../lib/Neuron";
+import { Neuron } from "../lib/Neuron";
 import { Value } from "../lib/Value";
 
 import hljs from "highlight.js";
@@ -99,6 +99,7 @@ const f = e.subtract(d).as("f");
   );
 }
 
+/** Wire up the button for manual backpropagation. */
 function wireBackpropagateHandler() {
   const backpropagateBtn = document.getElementById("backpropagate-expressions");
   if (backpropagateBtn) {
@@ -108,6 +109,27 @@ function wireBackpropagateHandler() {
       highlightAll();
     };
   }
+}
+
+/** Create a single neuron example. */
+function createNeuron() {
+  const neuron = `const neuron = new Neuron(3, "neuron");
+const inputs = [2.5, 1.5, 0.456];
+const out = neuron.call(inputs);
+`;
+
+  const neuronContainer = document.getElementById("neuron") as HTMLElement;
+
+  const neuronGraphContainer = document.getElementById(
+    "neuron-graph"
+  ) as HTMLElement;
+
+  neuronContainer.innerHTML = neuron;
+
+  const out = new Function("Neuron", `${neuron} return out;`)(Neuron);
+  out.backward();
+
+  createExpressionGraph(out, neuronGraphContainer, valueStyle, opStyle);
 }
 
 /** Runs highlight js on all code and pre > code blocks */
@@ -125,6 +147,10 @@ function highlightAll() {
 
 createSimpleExpression(false);
 createComplexExpression(false);
-highlightAll();
 wireBackpropagateHandler();
+
+createNeuron();
+
+highlightAll();
+
 

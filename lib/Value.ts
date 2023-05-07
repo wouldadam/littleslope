@@ -24,7 +24,7 @@ export class Value {
   protected backwardStep = () => {};
 
   /**
-   *
+   * Creates a Value.
    * @param data The scalar value for this Value.
    * @param name A user friendly name for this Value.
    * @param operation The Operation that resulted in this Value.
@@ -44,7 +44,7 @@ export class Value {
    */
   add(rhs: Value | number): Value {
     const rhsVal =
-      typeof rhs === "number" ? new Value(rhs, rhs.toFixed()) : rhs;
+      typeof rhs === "number" ? new Value(rhs, rhs.toFixed(2)) : rhs;
     const resultName = `${this.name}+${rhsVal.name}`;
 
     const res = new Value(this.data + rhsVal.data, resultName, "+", [
@@ -66,7 +66,7 @@ export class Value {
    */
   subtract(rhs: Value | number): Value {
     const rhsVal =
-      typeof rhs === "number" ? new Value(rhs, rhs.toFixed()) : rhs;
+      typeof rhs === "number" ? new Value(rhs, rhs.toFixed(2)) : rhs;
     const resultName = `${this.name}-${rhsVal.name}`;
 
     const res = new Value(this.data - rhsVal.data, resultName, "-", [
@@ -88,7 +88,7 @@ export class Value {
    */
   multiply(rhs: Value | number): Value {
     const rhsVal =
-      typeof rhs === "number" ? new Value(rhs, rhs.toFixed()) : rhs;
+      typeof rhs === "number" ? new Value(rhs, rhs.toFixed(2)) : rhs;
     const resultName = `${this.name}*${rhsVal.name}`;
 
     const res = new Value(this.data * rhsVal.data, resultName, "x", [
@@ -110,7 +110,7 @@ export class Value {
    */
   divide(rhs: Value | number): Value {
     const rhsVal =
-      typeof rhs === "number" ? new Value(rhs, rhs.toFixed()) : rhs;
+      typeof rhs === "number" ? new Value(rhs, rhs.toFixed(2)) : rhs;
     const resultName = `${this.name}/${rhsVal.name}`;
     const res = new Value(this.data / rhsVal.data, resultName, "/", [
       this,

@@ -1,4 +1,10 @@
-import { addNeuronToGraph, addValueToGraph, createGraph } from "../lib/graph";
+import {
+  addLayerToGraph,
+  addNeuronToGraph,
+  addValueToGraph,
+  createGraph,
+} from "../lib/graph";
+import { Layer } from "../lib/Layer";
 import { Neuron } from "../lib/Neuron";
 import { Value } from "../lib/Value";
 
@@ -50,6 +56,21 @@ const groups = {
       border: "#ffb99b",
     },
   },
+  layer: {
+    shape: "diamond",
+    font: {
+      color: "#fff",
+    },
+
+    color: {
+      background: "#4caf50",
+      highlight: {
+        background: "#63b863",
+        border: "#b4dcb0",
+      },
+      border: "#b4dcb0",
+    },
+  },
 };
 
 /** Populates the simple expression example. */
@@ -78,7 +99,7 @@ const area = length.multiply(width).as("area");`;
     groups
   );
 
-  addValueToGraph(area, "", nodes, edges);
+  addValueToGraph(area, "", "", nodes, edges);
 
   network.stabilize();
   network.fit();
@@ -114,7 +135,7 @@ const f = e.subtract(d).as("f");
     groups
   );
 
-  addValueToGraph(area, "", nodes, edges);
+  addValueToGraph(area, "", "", nodes, edges);
 
   network.stabilize();
   network.fit();
@@ -152,11 +173,36 @@ const out = neuron.call(inputs);
 
   const [network, nodes, edges] = createGraph(neuronGraphContainer, groups);
 
-  addNeuronToGraph(out, "0", nodes, edges, network);
+  addNeuronToGraph(out, "0", "", nodes, edges, network);
 
   network.stabilize();
   network.fit();
 }
+
+/** Create a single layer example. */
+function createLayer() {
+  const layer = `const layer = new Layer(3, 3, "l");
+const inputs = [2.5, 1.5, 0.456];
+const outs = layer.call(inputs);
+`;
+
+  const layerContainer = document.getElementById("layer") as HTMLElement;
+
+  const layerGraphContainer = document.getElementById(
+    "layer-graph"
+  ) as HTMLElement;
+
+  layerContainer.innerHTML = layer;
+
+  const outs = new Function("Layer", `${layer} return outs;`)(Layer);
+  outs.forEach((out: Value) => out.backward());
+
+  const [network, nodes, edges] = createGraph(layerGraphContainer, groups);
+
+  addLayerToGraph(outs, "0", nodes, edges, network);
+
+  network.stabilize();
+  network.fit();
 }
 
 /** Runs highlight js on all code and pre > code blocks */
@@ -177,6 +223,7 @@ createComplexExpression(false);
 wireBackpropagateHandler();
 
 createNeuron();
+createLayer();
 
 highlightAll();
 

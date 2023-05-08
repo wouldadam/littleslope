@@ -1,11 +1,12 @@
-import { createExpressionGraph } from "../lib/graph";
+import { addNeuronToGraph, addValueToGraph, createGraph } from "../lib/graph";
 import { Neuron } from "../lib/Neuron";
 import { Value } from "../lib/Value";
 
 import hljs from "highlight.js";
 
-/** Style for a Value node in a graph. */
-const valueStyle = {
+/** Styles for different kinds of nodes in the graph. */
+const groups = {
+  value: {
   shape: "box",
   font: {
     color: "#fff",
@@ -19,10 +20,8 @@ const valueStyle = {
       border: "#999999",
     },
   },
-};
-
-/** Style for an Operation node in a graph. */
-const opStyle = {
+  },
+  op: {
   shape: "circle",
   font: {
     color: "#fff",
@@ -34,6 +33,22 @@ const opStyle = {
       border: "#ffaab6",
     },
     border: "#ffaab6",
+  },
+  },
+  neuron: {
+    shape: "hexagon",
+    font: {
+      color: "#fff",
+    },
+
+    color: {
+      background: "#ff5722",
+      highlight: {
+        background: "#ff6d3b",
+        border: "#ffb99b",
+      },
+      border: "#ffb99b",
+    },
   },
 };
 
@@ -58,12 +73,15 @@ const area = length.multiply(width).as("area");`;
     `${simpleExpression} ${backward ? "area.backward();" : ""} return area;`
   )(Value);
 
-  createExpressionGraph(
-    area,
+  const [network, nodes, edges] = createGraph(
     simpleExpressionGraphContainer,
-    valueStyle,
-    opStyle
+    groups
   );
+
+  addValueToGraph(area, "", nodes, edges);
+
+  network.stabilize();
+  network.fit();
 }
 
 /** Populates the complex expression example. */
@@ -91,12 +109,15 @@ const f = e.subtract(d).as("f");
     `${complexExpression} ${backward ? "f.backward();" : ""} return f;`
   )(Value);
 
-  createExpressionGraph(
-    area,
+  const [network, nodes, edges] = createGraph(
     complexExpressionGraphContainer,
-    valueStyle,
-    opStyle
+    groups
   );
+
+  addValueToGraph(area, "", nodes, edges);
+
+  network.stabilize();
+  network.fit();
 }
 
 /** Wire up the button for manual backpropagation. */
@@ -129,7 +150,13 @@ const out = neuron.call(inputs);
   const out = new Function("Neuron", `${neuron} return out;`)(Neuron);
   out.backward();
 
-  createExpressionGraph(out, neuronGraphContainer, valueStyle, opStyle);
+  const [network, nodes, edges] = createGraph(neuronGraphContainer, groups);
+
+  addNeuronToGraph(out, "0", nodes, edges, network);
+
+  network.stabilize();
+  network.fit();
+}
 }
 
 /** Runs highlight js on all code and pre > code blocks */

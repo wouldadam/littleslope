@@ -50,6 +50,10 @@ export class Neuron {
       );
     }
 
+    inputs = inputs.map((data, idx) =>
+      data instanceof Value ? data : new Value(data, `${this.name}.i${idx}`)
+    );
+
     // Sum the weighted inputs and the bias, then squish
     let act = this.bias;
     for (let inputIdx = 0; inputIdx < this.weights.length; ++inputIdx) {

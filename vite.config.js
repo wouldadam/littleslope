@@ -4,8 +4,9 @@ import dts from 'vite-plugin-dts';
 
 let config = defineConfig({
   build: {
-    outDir: "dist_examples"
-  }
+    outDir: "docs/examples"
+  },
+  base: "./",
 });
 
 if (!process.env.BUILD_EXAMPLES) {

@@ -5,6 +5,9 @@
 [![Vite](https://img.shields.io/badge/Vite--blue.svg?style=social&logo=vite)](https://vitejs.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript--blue.svg?style=social&logo=typescript)](https://www.typescriptlang.org/)
 
+A small autograd engine and toy neural network in TypeScript alongside some helpers for visualisation in [visjs](https://visjs.org/).
+Heavily inspired by [micrograd](https://github.com/karpathy/micrograd/).
+
 ## Documentation
 
 See the API docs [here](https://wouldadam.github.io/littleslope/).

@@ -3,6 +3,8 @@ export { MultiLayerPerceptron } from "./MultiLayerPerceptron";
 export { Neuron } from "./Neuron";
 export { Value, type Kind, type Operation } from "./Value";
 export {
+  GraphEdgeDataSet,
+  GraphNodeDataSet,
   addLayerToGraph,
   addValueToGraph,
   clusterLayer,

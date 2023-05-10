@@ -17,6 +17,9 @@ export interface GraphEdge extends Edge {
   layerId: string;
 }
 
+export class GraphNodeDataSet extends DataSet<GraphNode, "id"> {}
+export class GraphEdgeDataSet extends DataSet<GraphEdge, "id"> {}
+
 /**
  * Creates an empty vis.js Network attached to the specified container.
  * The network can then be populated with Values and Neurons.
@@ -25,10 +28,12 @@ export interface GraphEdge extends Edge {
  * @param groups Custom styles for node/edge groups.
  * @returns The created network, alongside DataSets to add nodes and edges to.
  */
-export function createGraph(container: HTMLElement, groups: Options["groups"]) {
-  const nodes = new DataSet<GraphNode, "id">();
-  const edges = new DataSet<GraphEdge, "id">();
-
+export function createGraph(
+  container: HTMLElement,
+  groups: Options["groups"],
+  nodes: GraphNodeDataSet,
+  edges: GraphEdgeDataSet
+) {
   const options: Options = {
     layout: {
       hierarchical: {
@@ -101,7 +106,7 @@ export function createGraph(container: HTMLElement, groups: Options["groups"]) {
     }
   });
 
-  return [network, nodes, edges] as const;
+  return network;
 }
 
 /**

@@ -3,6 +3,8 @@ import { MultiLayerPerceptron } from "../lib/MultiLayerPerceptron";
 import { Neuron } from "../lib/Neuron";
 import { Value } from "../lib/Value";
 import {
+  GraphEdgeDataSet,
+  GraphNodeDataSet,
   addValueToGraph,
   clusterLayer,
   clusterNeuron,
@@ -95,12 +97,16 @@ const area = length.multiply(width).as("area");`;
     `${simpleExpression} ${backward ? "area.backward();" : ""} return area;`
   )(Value);
 
-  const [network, nodes, edges] = createGraph(
-    simpleExpressionGraphContainer,
-    groups
-  );
-
+  const nodes = new GraphNodeDataSet();
+  const edges = new GraphEdgeDataSet();
   addValueToGraph(area, nodes, edges);
+
+  const network = createGraph(
+    simpleExpressionGraphContainer,
+    groups,
+    nodes,
+    edges
+  );
 
   network.stabilize();
   network.fit();
@@ -131,12 +137,16 @@ const f = e.subtract(d).as("f");
     `${complexExpression} ${backward ? "f.backward();" : ""} return f;`
   )(Value);
 
-  const [network, nodes, edges] = createGraph(
-    complexExpressionGraphContainer,
-    groups
-  );
-
+  const nodes = new GraphNodeDataSet();
+  const edges = new GraphEdgeDataSet();
   addValueToGraph(area, nodes, edges);
+
+  const network = createGraph(
+    complexExpressionGraphContainer,
+    groups,
+    nodes,
+    edges
+  );
 
   network.stabilize();
   network.fit();
@@ -175,11 +185,13 @@ const out = neuron.call(inputs);
   )(Neuron);
   out.backward();
 
-  const [network, nodes, edges] = createGraph(neuronGraphContainer, groups);
-
+  const nodes = new GraphNodeDataSet();
+  const edges = new GraphEdgeDataSet();
   addValueToGraph(out, nodes, edges);
-  clusterNeuron(network, neuron.id);
 
+  const network = createGraph(neuronGraphContainer, groups, nodes, edges);
+
+  clusterNeuron(network, neuron.id);
   network.stabilize();
   network.fit();
 }
@@ -205,11 +217,13 @@ const outs = layer.call(inputs);
   )(Layer);
   outs.forEach((out: Value) => out.backward());
 
-  const [network, nodes, edges] = createGraph(layerGraphContainer, groups);
-
+  const nodes = new GraphNodeDataSet();
+  const edges = new GraphEdgeDataSet();
   for (const out of outs) {
     addValueToGraph(out, nodes, edges);
   }
+
+  const network = createGraph(layerGraphContainer, groups, nodes, edges);
 
   for (const neuron of layer.neurons) {
     clusterNeuron(network, neuron.id);
@@ -239,11 +253,14 @@ const outs = mlp.call(inputs);
   )(MultiLayerPerceptron);
   outs.forEach((out: Value) => out.backward());
 
-  const [network, nodes, edges] = createGraph(mlpGraphContainer, groups);
+  const nodes = new GraphNodeDataSet();
+  const edges = new GraphEdgeDataSet();
 
   for (const out of outs) {
     addValueToGraph(out, nodes, edges);
   }
+
+  const network = createGraph(mlpGraphContainer, groups, nodes, edges);
 
   for (const layer of mlp.layers) {
     for (const neuron of layer.neurons) {

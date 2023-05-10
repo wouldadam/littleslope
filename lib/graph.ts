@@ -44,7 +44,9 @@ export function createGraph(
     },
     physics: {
       hierarchicalRepulsion: {
-        avoidOverlap: 0.4,
+        avoidOverlap: 1,
+        nodeDistance: 60,
+        springLength: 80,
       },
     },
     groups,

@@ -44,9 +44,15 @@ button:active {
   font-size: xx-large;
 }
 
-.graph {
+.little-graph {
   background-color: var(--layer-bg-color);
   width: 100%;
   height: 20em;
+}
+
+.big-graph {
+  background-color: var(--layer-bg-color);
+  width: 100%;
+  height: 40em;
 }
 

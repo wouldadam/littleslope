@@ -1,12 +1,12 @@
-import {
-  addLayerToGraph,
-  addNeuronToGraph,
-  addValueToGraph,
-  createGraph,
-} from "../lib/graph";
 import { Layer } from "../lib/Layer";
 import { Neuron } from "../lib/Neuron";
 import { Value } from "../lib/Value";
+import {
+  addValueToGraph,
+  clusterLayer,
+  clusterNeuron,
+  createGraph,
+} from "../lib/graph";
 
 import hljs from "highlight.js";
 
@@ -99,7 +99,7 @@ const area = length.multiply(width).as("area");`;
     groups
   );
 
-  addValueToGraph(area, "", "", nodes, edges);
+  addValueToGraph(area, nodes, edges);
 
   network.stabilize();
   network.fit();
@@ -135,7 +135,7 @@ const f = e.subtract(d).as("f");
     groups
   );
 
-  addValueToGraph(area, "", "", nodes, edges);
+  addValueToGraph(area, nodes, edges);
 
   network.stabilize();
   network.fit();
@@ -155,7 +155,7 @@ function wireBackpropagateHandler() {
 
 /** Create a single neuron example. */
 function createNeuron() {
-  const neuron = `const neuron = new Neuron(3, "neuron");
+  const neuronCode = `const neuron = new Neuron(3, "neuron");
 const inputs = [2.5, 1.5, 0.456];
 const out = neuron.call(inputs);
 `;
@@ -166,14 +166,18 @@ const out = neuron.call(inputs);
     "neuron-graph"
   ) as HTMLElement;
 
-  neuronContainer.innerHTML = neuron;
+  neuronContainer.innerHTML = neuronCode;
 
-  const out = new Function("Neuron", `${neuron} return out;`)(Neuron);
+  const [out, neuron] = new Function(
+    "Neuron",
+    `${neuronCode} return [out, neuron];`
+  )(Neuron);
   out.backward();
 
   const [network, nodes, edges] = createGraph(neuronGraphContainer, groups);
 
-  addNeuronToGraph(out, "0", "", nodes, edges, network);
+  addValueToGraph(out, nodes, edges);
+  clusterNeuron(network, neuron.id);
 
   network.stabilize();
   network.fit();
@@ -181,7 +185,7 @@ const out = neuron.call(inputs);
 
 /** Create a single layer example. */
 function createLayer() {
-  const layer = `const layer = new Layer(3, 3, "l");
+  const layerCode = `const layer = new Layer(3, 3, "l");
 const inputs = [2.5, 1.5, 0.456];
 const outs = layer.call(inputs);
 `;
@@ -192,14 +196,28 @@ const outs = layer.call(inputs);
     "layer-graph"
   ) as HTMLElement;
 
-  layerContainer.innerHTML = layer;
+  layerContainer.innerHTML = layerCode;
 
-  const outs = new Function("Layer", `${layer} return outs;`)(Layer);
+  const [outs, layer] = new Function(
+    "Layer",
+    `${layerCode} return [outs, layer];`
+  )(Layer);
   outs.forEach((out: Value) => out.backward());
 
   const [network, nodes, edges] = createGraph(layerGraphContainer, groups);
 
-  addLayerToGraph(outs, "0", nodes, edges, network);
+  for (const out of outs) {
+    addValueToGraph(out, nodes, edges);
+  }
+
+  for (const neuron of layer.neurons) {
+    clusterNeuron(network, neuron.id);
+  }
+  clusterLayer(network, layer.id);
+
+  network.stabilize();
+  network.fit();
+}
 
   network.stabilize();
   network.fit();

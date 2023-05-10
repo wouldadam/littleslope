@@ -1,12 +1,14 @@
 import { v4 as uuidV4 } from "uuid";
 import { DataSet } from "vis-data";
 import { Edge, Network, Node, Options } from "vis-network";
-import { Value } from "./Value";
+import { Layer } from "./Layer";
+import { Kind, Value } from "./Value";
 
 /** Custom data stored in a Node. */
 export interface GraphNode extends Node {
   neuronId: string;
   layerId: string;
+  kind: Kind;
 }
 
 /** Custom data stored on an Edge. */
@@ -82,7 +84,6 @@ export function createGraph(container: HTMLElement, groups: Options["groups"]) {
       if (nodeId.startsWith("cluster:")) {
         const clusterNodes = network.getNodesInCluster(nodeId);
         const clusterNode = nodes.get(clusterNodes[0], {});
-        console.log(nodeId, clusterNodes, clusterNode);
         if (
           clusterNode &&
           (clusterNode.group === "value" || clusterNode.group === "op") &&
@@ -106,16 +107,12 @@ export function createGraph(container: HTMLElement, groups: Options["groups"]) {
 /**
  * Recursively adds a Value (and its children) to a graph.
  * @param value The Value to add.
- * @param neuronId The id of the Neuron the Value belongs to.
- * @param layerId The id of the Layer the Value belongs to.
  * @param nodes The nodes DataSet to add to.
  * @param edges The edges DataSet to add to.
  * @returns
  */
 export function addValueToGraph(
   value: Value,
-  neuronId: string,
-  layerId: string,
   nodes: DataSet<GraphNode, "id">,
   edges: DataSet<GraphEdge, "id">
 ) {
@@ -129,8 +126,9 @@ export function addValueToGraph(
       4
     )}\ngrad: ${value.grad.toFixed(4)}`,
     group: "value",
-    neuronId,
-    layerId,
+    neuronId: value.neuronId,
+    layerId: value.layerId,
+    kind: value.kind,
   });
 
   if (value.children.length > 0) {
@@ -139,76 +137,69 @@ export function addValueToGraph(
       id: opKey,
       label: ` ${value.operation} `,
       group: "op",
-      neuronId,
-      layerId,
+      neuronId: value.neuronId,
+      layerId: value.layerId,
+      kind: "default",
     });
-    edges.add({ from: opKey, to: value.id, arrows: "to", neuronId, layerId });
+    edges.add({
+      from: opKey,
+      to: value.id,
+      arrows: "to",
+      neuronId: value.neuronId,
+      layerId: value.layerId,
+    });
 
     for (const prev of value.children) {
-      addValueToGraph(prev, neuronId, layerId, nodes, edges);
-      edges.add({ from: prev.id, to: opKey, arrows: "to", neuronId, layerId });
+      addValueToGraph(prev, nodes, edges);
+      edges.add({
+        from: prev.id,
+        to: opKey,
+        arrows: "to",
+        neuronId: value.neuronId,
+        layerId: value.layerId,
+      });
     }
   }
 }
 
 /**
- * Add a neuron to the graph.
- * @param output The Value representing the output of a call to the Neuron.
- * @param neuronId The id of the Neuron.
- * @param layerId The id of the Layer the Value belongs to.
- * @param nodes The nodes DataSet to add to.
- * @param edges The edges DataSet to add to.
- * @param network The network being added to.
- */
-export function addNeuronToGraph(
-  output: Value,
-  neuronId: string,
-  layerId: string,
-  nodes: DataSet<GraphNode, "id">,
-  edges: DataSet<GraphEdge, "id">,
-  network: Network
-) {
-  addValueToGraph(output, neuronId, layerId, nodes, edges);
-  clusterNeuron(network, neuronId);
-}
-
-/**
  * Add a layer to the graph.
- * @param output The Value representing the output of a call to the Neuron.
- * @param neuronId The id of the Neuron.
+ * @param layer The Layer being added.
+ * @param output The Value representing the output of a call to the Layer.
  * @param nodes The nodes DataSet to add to.
  * @param edges The edges DataSet to add to.
  * @param network The network being added to.
  */
 export function addLayerToGraph(
+  layer: Layer,
   outputs: Value[],
-  layerId: string,
   nodes: DataSet<GraphNode, "id">,
   edges: DataSet<GraphEdge, "id">,
   network: Network
 ) {
   for (let idx = 0; idx < outputs.length; ++idx) {
-    addNeuronToGraph(
-      outputs[idx],
-      idx.toString(),
-      layerId,
-      nodes,
-      edges,
-      network
-    );
+    addValueToGraph(outputs[idx], nodes, edges);
   }
 
-  clusterLayer(network, layerId);
+  for (const neuron of layer.neurons) {
+    clusterNeuron(network, neuron.id);
+  }
+  clusterLayer(network, layer.id);
 }
 
-/** Clusters a neuron in a network. */
-function clusterNeuron(network: Network, neuronId: string) {
+/**
+ * Clusters a neuron in a network.
+ * @param network The network to cluster.
+ * @param neuronId The id of the Neuron to cluster.
+ */
+export function clusterNeuron(network: Network, neuronId: string) {
   network.cluster({
     joinCondition: (node: GraphNode) => {
-      return node.neuronId === neuronId;
+      return node.neuronId === neuronId && node.kind === "default";
     },
     clusterNodeProperties: {
-      label: `Neuron ${neuronId}`,
+      ...{ allowSingleNodeCluster: true },
+      label: `Neuron ${neuronId.substring(0, 6)}...`,
       group: "neuron",
     },
     processProperties: (clusterOptions, childNodes) => {
@@ -219,14 +210,22 @@ function clusterNeuron(network: Network, neuronId: string) {
   });
 }
 
-/** Clusters a layer in a network. */
-function clusterLayer(network: Network, layerId: string) {
+/** Clusters a layer in a network.
+ * @param network The network to cluster.
+ * @param layerId The id of the Layer to cluster.
+ */
+export function clusterLayer(network: Network, layerId: string) {
   network.cluster({
     joinCondition: (node: GraphNode) => {
-      return node.layerId === layerId;
+      return (
+        node.layerId === layerId &&
+        node.kind !== "input" &&
+        node.kind !== "output"
+      );
     },
     clusterNodeProperties: {
-      label: `Layer ${layerId}`,
+      ...{ allowSingleNodeCluster: true },
+      label: `Layer ${layerId.substring(0, 6)}...`,
       group: "layer",
     },
     processProperties: (clusterOptions, childNodes) => {

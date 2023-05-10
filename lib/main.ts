@@ -1,10 +1,11 @@
 export { Layer } from "./Layer";
 export { Neuron } from "./Neuron";
-export { Value, type Operation } from "./Value";
+export { Value, type Kind, type Operation } from "./Value";
 export {
   addLayerToGraph,
-  addNeuronToGraph,
   addValueToGraph,
+  clusterLayer,
+  clusterNeuron,
   createGraph,
   type GraphEdge,
   type GraphNode,

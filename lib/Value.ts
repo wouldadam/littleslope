@@ -6,11 +6,19 @@ import { v4 as uuidV4 } from "uuid";
 export type Operation = "+" | "-" | "x" | "/" | "=" | "pow" | "exp" | "tanh";
 
 /**
+ * The kinds of Values that could exist.
+ */
+export type Kind = "default" | "input" | "weight" | "output";
+
+/**
  * Represents an individual scalar value as part of an expression.
  */
 export class Value {
   /** A UUIDv4 unique to this Value. */
   public readonly id = uuidV4();
+
+  /** The kind of the Value */
+  public kind: Kind = "default";
 
   /**
    * Derivative of the expression result with respect to this value.
@@ -27,12 +35,16 @@ export class Value {
    * Creates a Value.
    * @param data The scalar value for this Value.
    * @param name A user friendly name for this Value.
+   * @param neuronId The id of the Neuron this that generated this Value.
+   * @param layerId The id of the Layer this that generated this Value.
    * @param operation The Operation that resulted in this Value.
    * @param children The Values that were part of the operation resulting in this Value.
    */
   constructor(
     public data: number,
     public name: string,
+    public neuronId: string = "",
+    public layerId: string = "",
     public readonly operation: Operation = "=",
     public readonly children: readonly Value[] = []
   ) {}
@@ -47,10 +59,14 @@ export class Value {
       typeof rhs === "number" ? new Value(rhs, rhs.toFixed(2)) : rhs;
     const resultName = `${this.name}+${rhsVal.name}`;
 
-    const res = new Value(this.data + rhsVal.data, resultName, "+", [
-      this,
-      rhsVal,
-    ]);
+    const res = new Value(
+      this.data + rhsVal.data,
+      resultName,
+      this.neuronId,
+      this.layerId,
+      "+",
+      [this, rhsVal]
+    );
     res.backwardStep = () => {
       this.grad += 1.0 * res.grad;
       rhsVal.grad += 1.0 * res.grad;
@@ -69,10 +85,14 @@ export class Value {
       typeof rhs === "number" ? new Value(rhs, rhs.toFixed(2)) : rhs;
     const resultName = `${this.name}-${rhsVal.name}`;
 
-    const res = new Value(this.data - rhsVal.data, resultName, "-", [
-      this,
-      rhsVal,
-    ]);
+    const res = new Value(
+      this.data - rhsVal.data,
+      resultName,
+      this.neuronId,
+      this.layerId,
+      "-",
+      [this, rhsVal]
+    );
     res.backwardStep = () => {
       this.grad += 1.0 * res.grad;
       rhsVal.grad += 1.0 * res.grad;
@@ -91,10 +111,14 @@ export class Value {
       typeof rhs === "number" ? new Value(rhs, rhs.toFixed(2)) : rhs;
     const resultName = `${this.name}*${rhsVal.name}`;
 
-    const res = new Value(this.data * rhsVal.data, resultName, "x", [
-      this,
-      rhsVal,
-    ]);
+    const res = new Value(
+      this.data * rhsVal.data,
+      resultName,
+      this.neuronId,
+      this.layerId,
+      "x",
+      [this, rhsVal]
+    );
     res.backwardStep = () => {
       this.grad += rhsVal.data * res.grad;
       rhsVal.grad += this.data * res.grad;
@@ -112,10 +136,14 @@ export class Value {
     const rhsVal =
       typeof rhs === "number" ? new Value(rhs, rhs.toFixed(2)) : rhs;
     const resultName = `${this.name}/${rhsVal.name}`;
-    const res = new Value(this.data / rhsVal.data, resultName, "/", [
-      this,
-      rhsVal,
-    ]);
+    const res = new Value(
+      this.data / rhsVal.data,
+      resultName,
+      this.neuronId,
+      this.layerId,
+      "/",
+      [this, rhsVal]
+    );
     res.backwardStep = () => {
       this.grad += (1 / rhsVal.data) * res.grad;
       rhsVal.grad += -((1 / this.data) * res.grad) / 2;
@@ -131,7 +159,14 @@ export class Value {
   pow(rhs: number): Value {
     const resultName = `pow(${this.name}, ${rhs})`;
 
-    const res = new Value(Math.pow(this.data, rhs), resultName, "pow", [this]);
+    const res = new Value(
+      Math.pow(this.data, rhs),
+      resultName,
+      this.neuronId,
+      this.layerId,
+      "pow",
+      [this]
+    );
     res.backwardStep = () => {
       this.grad += rhs * Math.pow(rhs * this.data, rhs - 1) * res.grad;
     };
@@ -146,7 +181,14 @@ export class Value {
   exp(): Value {
     const resultName = `exp(${this.name})`;
 
-    const res = new Value(Math.exp(this.data), resultName, "exp", [this]);
+    const res = new Value(
+      Math.exp(this.data),
+      resultName,
+      this.neuronId,
+      this.layerId,
+      "exp",
+      [this]
+    );
     res.backwardStep = () => {
       this.grad += res.data * res.grad;
     };
@@ -160,7 +202,14 @@ export class Value {
    */
   tanh() {
     const resultName = `tanh(${this.name})`;
-    const res = new Value(Math.tanh(this.data), resultName, "tanh", [this]);
+    const res = new Value(
+      Math.tanh(this.data),
+      resultName,
+      this.neuronId,
+      this.layerId,
+      "tanh",
+      [this]
+    );
 
     res.backwardStep = () => {
       this.grad += (1 - Math.pow(res.data, 2)) * res.grad;
@@ -178,13 +227,17 @@ export class Value {
   }
 
   /**
-   * Changes the name of the Value.
+   * Changes the name and ids of the Value.
    * This does not create a new Value.
    * @param name The new name.
+   * @param neuronId The new neuronId. Unchanged if not set.
+   * @param layerId The new layerId. Unchanged if not set.
    * @returns The current Value.
    */
-  as(name: string): Value {
+  as(name: string, neuronId?: string, layerId?: string): Value {
     this.name = name;
+    this.neuronId = neuronId ?? this.neuronId;
+    this.layerId = layerId ?? this.layerId;
     return this;
   }
 

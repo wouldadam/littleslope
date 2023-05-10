@@ -1,3 +1,4 @@
+import { v4 as uuidV4 } from "uuid";
 import { Value } from "./Value";
 
 /**
@@ -14,6 +15,9 @@ function randomRange(min: number, max: number) {
  * Represents a single neuron.
  */
 export class Neuron {
+  /** A UUIDv4 unique to this Neuron. */
+  public readonly id = uuidV4();
+
   /** The weights applied to each input. */
   public weights: Value[];
 
@@ -24,18 +28,32 @@ export class Neuron {
    * Creates a new Neuron.
    * @param inputCount The number of inputs this Neuron will accept.
    * @param name A user friendly name for the Neuron. Also used to name the weights and bias Values.
+   * @param layerId The id if the layer that generated this Neuron.
    */
-  constructor(inputCount: number, public name: string) {
+  constructor(
+    inputCount: number,
+    public name: string,
+    public layerId: string = ""
+  ) {
     this.weights = new Array(inputCount);
 
     for (let inputIdx = 0; inputIdx < inputCount; ++inputIdx) {
       this.weights[inputIdx] = new Value(
         randomRange(-1, 1),
-        `${name}.w${inputIdx}`
+        `${name}.w${inputIdx}`,
+        this.id,
+        this.layerId
       );
+      this.weights[inputIdx].kind = "weight";
     }
 
-    this.bias = new Value(randomRange(-1, 1), "bias");
+    this.bias = new Value(
+      randomRange(-1, 1),
+      `${this.name}.bias`,
+      this.id,
+      this.layerId
+    );
+    this.bias.kind = "input";
   }
 
   /**
@@ -50,9 +68,15 @@ export class Neuron {
       );
     }
 
-    inputs = inputs.map((data, idx) =>
-      data instanceof Value ? data : new Value(data, `${this.name}.i${idx}`)
-    );
+    inputs = inputs.map((data, idx) => {
+      if (data instanceof Value) {
+        return data;
+      }
+
+      data = new Value(data, `${this.name}.i${idx}`, this.id, this.layerId);
+      data.kind = "input";
+      return data;
+    });
 
     // Sum the weighted inputs and the bias, then squish
     let act = this.bias;
@@ -60,13 +84,13 @@ export class Neuron {
       act = act.add(
         this.weights[inputIdx]
           .multiply(inputs[inputIdx])
-          .as(`${this.weights[inputIdx].name}.wtd`)
+          .as(`${this.weights[inputIdx].name}.wtd`, this.id, this.layerId)
       );
     }
 
-    act = act.tanh().as(`${this.name}.out`);
-
-    return act;
+    const out = act.tanh().as(`${this.name}.out`);
+    out.kind = "output";
+    return out;
   }
 
   /** Gets the weights + bias Values for the Neuron. */

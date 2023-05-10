@@ -1,4 +1,5 @@
 import { Layer } from "../lib/Layer";
+import { MultiLayerPerceptron } from "../lib/MultiLayerPerceptron";
 import { Neuron } from "../lib/Neuron";
 import { Value } from "../lib/Value";
 import {
@@ -219,6 +220,38 @@ const outs = layer.call(inputs);
   network.fit();
 }
 
+/** Create a MLP example. */
+function createMLP() {
+  const mlpCode = `const mlp = new MultiLayerPerceptron(3, [4, 4, 1]);;
+const inputs = [2.5, 1.5, 0.456];
+const outs = mlp.call(inputs);
+`;
+
+  const mlpContainer = document.getElementById("mlp") as HTMLElement;
+
+  const mlpGraphContainer = document.getElementById("mlp-graph") as HTMLElement;
+
+  mlpContainer.innerHTML = mlpCode;
+
+  const [outs, mlp] = new Function(
+    "MultiLayerPerceptron",
+    `${mlpCode} return [outs, mlp];`
+  )(MultiLayerPerceptron);
+  outs.forEach((out: Value) => out.backward());
+
+  const [network, nodes, edges] = createGraph(mlpGraphContainer, groups);
+
+  for (const out of outs) {
+    addValueToGraph(out, nodes, edges);
+  }
+
+  for (const layer of mlp.layers) {
+    for (const neuron of layer.neurons) {
+      clusterNeuron(network, neuron.id);
+    }
+    clusterLayer(network, layer.id);
+  }
+
   network.stabilize();
   network.fit();
 }
@@ -242,6 +275,7 @@ wireBackpropagateHandler();
 
 createNeuron();
 createLayer();
+createMLP();
 
 highlightAll();
 

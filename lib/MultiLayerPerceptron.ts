@@ -1,4 +1,5 @@
 import { Layer } from "./Layer";
+import { ActivationFunction, tanh } from "./Neuron";
 import { Value } from "./Value";
 
 /**
@@ -11,21 +12,36 @@ export class MultiLayerPerceptron {
   /**
    * Creates an MLP.
    * @param inputCount The number of inputs to the MLP.
-   * @param neuronCountPerLayer An array indicating the number of Neurons in each
-   *                            Layer (starting with the first hidden layer).
+   * @param layerConfig Array containing the config for each layer (starting with the first hidden layer). The config can be:
+   *                    - A number indicating the number of neurons in the layer.
+   *                    - An array indicating the number of neurons in the layer and then the activation function.
    */
-  constructor(inputCount: number, neuronCountPerLayer: number[]) {
-    this.layers = new Array(neuronCountPerLayer.length);
+  constructor(
+    inputCount: number,
+    layerConfig: Array<number | [number, ActivationFunction]>
+  ) {
+    this.layers = new Array(layerConfig.length);
 
+    let layerInputCount = inputCount;
     for (let layerIdx = 0; layerIdx < this.layers.length; ++layerIdx) {
-      const layerInputCount =
-        layerIdx === 0 ? inputCount : neuronCountPerLayer[layerIdx - 1];
+      const config = layerConfig[layerIdx];
+      let layerNeuronCount = 1;
+      let activationFunction = tanh;
+      if (typeof config === "number") {
+        layerNeuronCount = config;
+      } else {
+        layerNeuronCount = config[0];
+        activationFunction = config[1];
+      }
 
       this.layers[layerIdx] = new Layer(
         layerInputCount,
-        neuronCountPerLayer[layerIdx],
-        `l${layerIdx}`
+        layerNeuronCount,
+        `l${layerIdx}`,
+        activationFunction
       );
+
+      layerInputCount = layerNeuronCount;
     }
   }
 

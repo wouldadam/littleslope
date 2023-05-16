@@ -1,6 +1,13 @@
 export { Layer } from "./Layer";
 export { MultiLayerPerceptron } from "./MultiLayerPerceptron";
-export { Neuron } from "./Neuron";
+export {
+  Neuron,
+  linear,
+  relu,
+  sigmoid,
+  tanh,
+  type ActivationFunction,
+} from "./Neuron";
 export { Value, type Kind, type Operation } from "./Value";
 export {
   GraphEdgeDataSet,

@@ -3,7 +3,16 @@ import { v4 as uuidV4 } from "uuid";
 /**
  * Describes the operation that was used to form a Value.
  * */
-export type Operation = "+" | "-" | "x" | "/" | "=" | "pow" | "exp" | "tanh";
+export type Operation =
+  | "+"
+  | "-"
+  | "x"
+  | "/"
+  | "="
+  | "pow"
+  | "exp"
+  | "tanh"
+  | "relu";
 
 /**
  * The kinds of Values that could exist.
@@ -191,6 +200,28 @@ export class Value {
     );
     res.backwardStep = () => {
       this.grad += res.data * res.grad;
+    };
+
+    return res;
+  }
+
+  /**
+   * Calculates the ReLU (rectified linear unit) of this Value.
+   * @returns The resulting Value.
+   */
+  relu() {
+    const resultName = `relu(${this.name})`;
+    const res = new Value(
+      this.data < 0 ? 0 : this.data,
+      resultName,
+      this.neuronId,
+      this.layerId,
+      "relu",
+      [this]
+    );
+
+    res.backwardStep = () => {
+      this.grad += res.data > 0 ? res.grad : 0;
     };
 
     return res;

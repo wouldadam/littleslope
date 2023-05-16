@@ -1,5 +1,5 @@
 import { v4 as uuidV4 } from "uuid";
-import { Neuron } from "./Neuron";
+import { ActivationFunction, Neuron, tanh } from "./Neuron";
 import { Value } from "./Value";
 
 /**
@@ -16,17 +16,20 @@ export class Layer {
    * @param neuronInputCount the number of inputs each Neuron in the layer should accept.
    * @param neuronCount The number of Neurons in the network.
    * @param name A user friendly name for the layer.
+   * @param activationFunction The activation function to use in this Layer's Neurons.
    */
   constructor(
     neuronInputCount: number,
     neuronCount: number,
-    public name: string
+    public name: string,
+    activationFunction: ActivationFunction = tanh
   ) {
     this.neurons = new Array(neuronCount);
     for (let neuronIdx = 0; neuronIdx < neuronCount; ++neuronIdx) {
       this.neurons[neuronIdx] = new Neuron(
         neuronInputCount,
         `${name}.n${neuronIdx}`,
+        activationFunction,
         this.id
       );
     }

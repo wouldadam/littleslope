@@ -28,11 +28,13 @@ export class Neuron {
    * Creates a new Neuron.
    * @param inputCount The number of inputs this Neuron will accept.
    * @param name A user friendly name for the Neuron. Also used to name the weights and bias Values.
+   * @param activationFunction The activation function to use in this Neuron.
    * @param layerId The id if the layer that generated this Neuron.
    */
   constructor(
     inputCount: number,
     public name: string,
+    public activationFunction: ActivationFunction = tanh,
     public layerId: string = ""
   ) {
     this.weights = new Array(inputCount);
@@ -79,16 +81,16 @@ export class Neuron {
     });
 
     // Sum the weighted inputs and the bias, then squish
-    let act = this.bias;
+    let sum = this.bias;
     for (let inputIdx = 0; inputIdx < this.weights.length; ++inputIdx) {
-      act = act.add(
+      sum = sum.add(
         this.weights[inputIdx]
           .multiply(inputs[inputIdx])
           .as(`${this.weights[inputIdx].name}.wtd`, this.id, this.layerId)
       );
     }
 
-    const out = act.tanh().as(`${this.name}.out`);
+    const out = this.activationFunction(sum).as(`${this.name}.out`);
     out.kind = "output";
     return out;
   }
@@ -97,4 +99,27 @@ export class Neuron {
   getParameters(): Value[] {
     return this.weights.concat([this.bias]);
   }
+}
+
+/** Prototype for an activation function. */
+export type ActivationFunction = (val: Value) => Value;
+
+/** A linear activation function. */
+export function linear(val: Value) {
+  return val;
+}
+
+/** A sigmoid activation function. */
+export function sigmoid(val: Value) {
+  return new Value(1, "1").divide(val.negate().exp().add(1));
+}
+
+/** A tanh activation function. */
+export function tanh(val: Value) {
+  return val.tanh();
+}
+
+/** A rectified linear unit activation function. */
+export function relu(val: Value) {
+  return val.relu();
 }

@@ -8,6 +8,7 @@
     "Backpropagate",
     "backpropagation",
     "littleslope",
-    "Perceptron"
+    "Perceptron",
+    "relu"
   ]
 }

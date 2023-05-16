@@ -1,6 +1,6 @@
 import { Layer } from "../lib/Layer";
 import { MultiLayerPerceptron } from "../lib/MultiLayerPerceptron";
-import { Neuron } from "../lib/Neuron";
+import { Neuron, linear, tanh } from "../lib/Neuron";
 import { Value } from "../lib/Value";
 import {
   GraphEdgeDataSet,
@@ -276,7 +276,7 @@ const outs = mlp.call(inputs);
 
 /** Create a gradient descent example. */
 function createGD() {
-  const gdCode = `const mlp = new MultiLayerPerceptron(3, [4, 4, 1]);
+  const gdCode = `const mlp = new MultiLayerPerceptron(3, [[4, tanh], [4, tanh], [1, linear]]);
 const inputs = [
   [2, 3, -1],
   [3, -1, 0.5],
@@ -284,7 +284,7 @@ const inputs = [
   [1, 1, -1],
 ];
 const expected = [[1], [-1], [-1], [1]];
-const [results, loss] = gradientDescent(mlp, inputs, expected, 500 , 0.01);
+const [results, loss] = gradientDescent(mlp, inputs, expected, 50 , 0.01);
 `;
 
   const gdContainer = document.getElementById("gd") as HTMLElement;
@@ -295,9 +295,12 @@ const [results, loss] = gradientDescent(mlp, inputs, expected, 500 , 0.01);
 
   const [_, results, loss] = new Function(
     "MultiLayerPerceptron",
+    "tanh",
+    "linear",
     "gradientDescent",
+
     `${gdCode} return [mlp, results, loss];`
-  )(MultiLayerPerceptron, gradientDescent);
+  )(MultiLayerPerceptron, tanh, linear, gradientDescent);
 
   lossContainer.innerText = loss.data;
   resultsContainer.innerText = results

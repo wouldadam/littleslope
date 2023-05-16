@@ -10,6 +10,7 @@ import {
   clusterNeuron,
   createGraph,
 } from "../lib/graph";
+import { gradientDescent } from "../lib/train";
 
 import hljs from "highlight.js";
 
@@ -273,6 +274,39 @@ const outs = mlp.call(inputs);
   network.fit();
 }
 
+/** Create a gradient descent example. */
+function createGD() {
+  const gdCode = `const mlp = new MultiLayerPerceptron(3, [4, 4, 1]);
+const inputs = [
+  [2, 3, -1],
+  [3, -1, 0.5],
+  [0.5, 1, 1],
+  [1, 1, -1],
+];
+const expected = [[1], [-1], [-1], [1]];
+const [results, loss] = gradientDescent(mlp, inputs, expected, 500 , 0.01);
+`;
+
+  const gdContainer = document.getElementById("gd") as HTMLElement;
+  const lossContainer = document.getElementById("gd-loss") as HTMLElement;
+  const resultsContainer = document.getElementById("gd-results") as HTMLElement;
+
+  gdContainer.innerHTML = gdCode;
+
+  const [_, results, loss] = new Function(
+    "MultiLayerPerceptron",
+    "gradientDescent",
+    `${gdCode} return [mlp, results, loss];`
+  )(MultiLayerPerceptron, gradientDescent);
+
+  lossContainer.innerText = loss.data;
+  resultsContainer.innerText = results
+    .flatMap((result: Value[]) => {
+      return result.map((value) => value.data);
+    })
+    .join(", ");
+}
+
 /** Runs highlight js on all code and pre > code blocks */
 function highlightAll() {
   hljs.configure({
@@ -293,6 +327,7 @@ wireBackpropagateHandler();
 createNeuron();
 createLayer();
 createMLP();
+createGD();
 
 highlightAll();
 

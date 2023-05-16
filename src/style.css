@@ -39,6 +39,21 @@ button:active {
   display: inline !important;
 }
 
+dl {
+  background-color: var(--layer-bg-color);
+  padding: 16px;
+}
+
+dt {
+  font-size: large;
+  font-weight: 600;
+}
+
+dd {
+  font-family: monospace;
+  font-size: large;
+}
+
 .title {
   text-align: center;
   font-size: xx-large;
